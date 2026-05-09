@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="api.js" defer></script>
+  <script src="main.js" defer></script>
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="list-div">
+      <section id="request-post">
+        <label for="post-list-name">Insert element on list</label> <br>
+        <input type="text" id="post-list-name" placeholder="Insert name of List">
+        <input type="text" id="descrizione" placeholder="insert description">
+        <button class="" id="post-list-button">Insert List</button>
+      </section>
+
+      <section id="list-put">
+        <label for="put-list-name">Update list</label> <br>
+        <input id="put-list-name" type="text" placeholder="New list name" />
+         <button id="put-list">Change list name</button>  
+         <div>
+         <label for="description-list">Update description</label> <br>
+        <input id="description-list" type="text" placeholder="New description name" />
+         <button id="put-list-description">Change description name</button>
+         </div>
+      </section>
+    </div>
+
+    <div>
+      <section id="request-post-note">
+        <label for="post-list-name-note">Insert element on note</label> <br>
+        <input type="text" id="post-list-name-note" placeholder="Insert name of note">
+        <button id="post-list-button-note">Insert List</button>
+      </section>
+
+      <section id="list-put-note">
+        <label for="put-list-name-note">Update note</label> <br>
+       <input id="put-list-name-note" type="text" placeholder="New note name" />
+        <button id="put-list-note">Change note name</button>
+      </section>
+
+
+    </div>
+  </div>
+  <div class = "container-table">
+    <div id="result-list"></div>
+    <div id="result-list-note"></div>
+  </div>
+</body>
+
+</html>
