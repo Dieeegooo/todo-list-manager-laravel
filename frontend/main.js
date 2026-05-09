@@ -1,4 +1,4 @@
-const host = "http://localhost:3000";
+const host = "http://localhost:8000/api";
 const getListButton = document.getElementById("get-list-button");
 const postListName = document.getElementById("post-list-name");
 const postListButton = document.getElementById("post-list-button");
