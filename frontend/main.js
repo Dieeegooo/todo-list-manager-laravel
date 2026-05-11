@@ -7,51 +7,51 @@ const description = document.getElementById("descrizione");
 const putListName = document.getElementById("put-list-name");
 let putListId = document.getElementById("put-list-id");
 const putListButton = document.getElementById("put-list");
-const descriptionListName = document.getElementById("description-list")
-const descriptionListButton = document.getElementById("put-list-description")
-let postNoteId = document.getElementById("post-note-id");
-let deleteListId = document.getElementById("del-list-id");
-let descriptionListId = ""
-let id = null
-
+const descriptionListName = document.getElementById("description-list");
+const descriptionListButton = document.getElementById("put-list-description");
+let postNoteId = "";
+let deleteListId = "";
+let descriptionListId = "";
+let id = null;
+//ricordati di cambiare tutti i path delle richieste alle api e pensa a come fare la show
 async function reloadListTable() {
-  apiRequest(host + "/list", "GET", {})
+  apiRequest(host + "/tasks", "GET", {})
     .then((data) => {
       console.log(data); // TODO: delete this line
       resultList.innerHTML = "";
       const table = document.createElement("table");
 
       const th = document.createElement("th");
-      th.textContent = "List";
+      th.textContent = "Tasks";
       th.colSpan = "5";
       const tr = document.createElement("tr");
       tr.appendChild(th);
       table.appendChild(tr);
 
-      for (const list of data) {
+      for (const tasks of data) {
         const tr = document.createElement("tr");
         const td1 = document.createElement("td");
-        td1.innerHTML = list.id;
+        td1.innerHTML = tasks.id;
         const td2 = document.createElement("td");
-        td2.innerHTML = list.title;
+        td2.innerHTML = tasks.title;
         const td3 = document.createElement("td");
         td3.style.cursor = "pointer";
         td2.style.cursor = "pointer"
-        td3.innerHTML = list.descrizione;
+        td3.innerHTML = tasks.description;
         const td4 = document.createElement("td");
         td4.innerHTML = "&#9003";
         td2.addEventListener("click", () => {
-          putListId = list.id;
-          deleteListId = list.id;
-          postNoteId = list.id;
+          putListId = tasks.id;
+          deleteListId = tasks.id;
+          postNoteId = tasks.id;
         })
         td3.addEventListener("click", () => {
-          descriptionListId = list.id;
+          descriptionListId = tasks.id;
           descriptionListName.focus();
         })
         td4.style.cursor = "pointer"
         td4.addEventListener("click", async () => {
-          await apiRequest(host + "/list/" + list.id, "DELETE", {});
+          await apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
           await reloadListTable();
         })
         tr.appendChild(td1);
@@ -75,7 +75,7 @@ postListButton.addEventListener("click", () => {
     return console.log("nome o descrizione non validi");
   }
 
-  apiRequest(host + "/list", "POST", { name: postListName.value, descrizione: description.value });
+  apiRequest(host + "/tasks", "POST", { title:postListName.value, description:description.value });
 
   postListName.value = "";
   description.value = "";
@@ -88,7 +88,7 @@ putListButton.addEventListener("click", () => {
     return console.log("id o nome non validi");
   }
 
-  apiRequest(host + "/list/" + putListId, "PUT", { name: putListName.value });
+  apiRequest(host + "/tasks/" + putListId, "PUT", { title:putListName.value });
 
   putListId.value = "";
   putListName.value = "";
@@ -101,7 +101,7 @@ descriptionListButton.addEventListener("click",async () => {
   if (descriptionListName.value == "") {
     return console.log("id o nome non validi");
   }
-  await apiRequest(host + "/desc/" + descriptionListId, "PUT", { desc: descriptionListName.value });
+  await apiRequest(host + "/tasks/" + descriptionListId, "PUT", { description: descriptionListName.value });
 
   descriptionListName.value = "";
 
@@ -119,7 +119,7 @@ let putListIdNote = ""
 const putListButtonNote = document.getElementById("put-list-note");
 
 async function reloadListTableNote() {
-  apiRequest(host + "/note", "GET", {})
+  apiRequest(host + "/notes", "GET", {})
     .then((data) => {
       resultListNote.innerHTML = "";
       const table = document.createElement("table");
@@ -143,7 +143,7 @@ async function reloadListTableNote() {
             putListNameNote.focus();
         })
         const td3 = document.createElement("td");
-        td3.innerHTML = note.list_id;
+        td3.innerHTML = note.task_id;
         const td4 = document.createElement("td");
         td4.innerHTML = note.state;
         const td5 = document.createElement("td");
@@ -151,7 +151,7 @@ async function reloadListTableNote() {
         td5.style.cursor = "pointer";
         td5.addEventListener("click", async () => {
 
-          await apiRequest(host + "/note/" + note.id, "DELETE", {});
+          await apiRequest(host + "/notes/" + note.id, "DELETE", {});
 
           await reloadListTableNote();
         });
@@ -159,14 +159,14 @@ async function reloadListTableNote() {
         td4.addEventListener("click", () => {
           if (note.state == "todo") {
             // cambia in done
-            apiRequest(host + "/note/" + note.id + "/todo", "PUT", { state: "done" }).then(() => {
+            apiRequest(host + "/notes/" + note.id , "PUT", { state: "done" }).then(() => {
               setTimeout(() => {
                 reloadListTableNote();
               }, 20);
             });
           } else {
             // cambia in todo
-            apiRequest(host + "/note/" + note.id + "/todo", "PUT", { state: "todo" }).then(() => {
+            apiRequest(host + "/notes/" + note.id , "PUT", { state: "todo" }).then(() => {
               setTimeout(() => {
                 reloadListTableNote();
               }, 20);
@@ -195,7 +195,7 @@ postListButtonNote.addEventListener("click", () => {
 
   //chiedere a derteo se gli passi che todo
 
-  apiRequest(host + "/note", "POST", { name: postListNameNote.value, state: "todo", list_id: postNoteId });
+  apiRequest(host + "/notes", "POST", { task_id:postNoteId, state:"todo", name: postListNameNote.value });
 
   postListNameNote.value = "";
 
@@ -207,7 +207,7 @@ putListButtonNote.addEventListener("click", () => {
     return console.log("id o nome non validi");
   }
 
-  apiRequest(host + "/note/" + putListIdNote, "PUT", { name: putListNameNote.value });
+  apiRequest(host + "/notes/" + putListIdNote, "PUT", { name: putListNameNote.value });
 
   putListNameNote.value = "";
 

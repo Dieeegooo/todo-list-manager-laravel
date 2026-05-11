@@ -55,6 +55,6 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $task->delete();
-        return response(null,204);
+        return response()->json([]);
     }
 }
