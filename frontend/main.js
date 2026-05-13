@@ -9,15 +9,22 @@ let putListId = document.getElementById("put-list-id");
 const putListButton = document.getElementById("put-list");
 const descriptionListName = document.getElementById("description-list");
 const descriptionListButton = document.getElementById("put-list-description");
+const getListButtonNote = document.getElementById("get-list-button-note");
+const postListNameNote = document.getElementById("post-list-name-note");
+const postListButtonNote = document.getElementById("post-list-button-note");
+const resultListNote = document.getElementById("result-list-note");
+const putListNameNote = document.getElementById("put-list-name-note");
+let putListIdNote = "";
+const putListButtonNote = document.getElementById("put-list-note");
 let postNoteId = "";
 let deleteListId = "";
 let descriptionListId = "";
 let id = null;
-//ricordati di cambiare tutti i path delle richieste alle api e pensa a come fare la show
+
 async function reloadListTable() {
   apiRequest(host + "/tasks", "GET", {})
     .then((data) => {
-      console.log(data); // TODO: delete this line
+      console.log(data);
       resultList.innerHTML = "";
       const table = document.createElement("table");
 
@@ -36,7 +43,7 @@ async function reloadListTable() {
         td2.innerHTML = tasks.title;
         const td3 = document.createElement("td");
         td3.style.cursor = "pointer";
-        td2.style.cursor = "pointer"
+        td2.style.cursor = "pointer";
         td3.innerHTML = tasks.description;
         const td4 = document.createElement("td");
         td4.innerHTML = "&#9003";
@@ -44,16 +51,19 @@ async function reloadListTable() {
           putListId = tasks.id;
           deleteListId = tasks.id;
           postNoteId = tasks.id;
-        })
+
+          reloadListTableNote(tasks.id);
+        });
+        
         td3.addEventListener("click", () => {
           descriptionListId = tasks.id;
           descriptionListName.focus();
-        })
-        td4.style.cursor = "pointer"
+        });
+        td4.style.cursor = "pointer";
         td4.addEventListener("click", async () => {
           await apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
           await reloadListTable();
-        })
+        });
         tr.appendChild(td1);
         tr.appendChild(td2);
         tr.appendChild(td3);
@@ -67,7 +77,6 @@ async function reloadListTable() {
 
 document.addEventListener("DOMContentLoaded", () => {
   reloadListTable();
-  reloadListTableNote();
 });
 
 postListButton.addEventListener("click", () => {
@@ -75,7 +84,7 @@ postListButton.addEventListener("click", () => {
     return console.log("nome o descrizione non validi");
   }
 
-  apiRequest(host + "/tasks", "POST", { title:postListName.value, description:description.value });
+  apiRequest(host + "/tasks", "POST", { title: postListName.value, description: description.value });
 
   postListName.value = "";
   description.value = "";
@@ -88,7 +97,7 @@ putListButton.addEventListener("click", () => {
     return console.log("id o nome non validi");
   }
 
-  apiRequest(host + "/tasks/" + putListId, "PUT", { title:putListName.value });
+  apiRequest(host + "/tasks/" + putListId, "PUT", { title: putListName.value });
 
   putListId.value = "";
   putListName.value = "";
@@ -96,8 +105,7 @@ putListButton.addEventListener("click", () => {
   reloadListTable();
 });
 
-
-descriptionListButton.addEventListener("click",async () => {
+descriptionListButton.addEventListener("click", async () => {
   if (descriptionListName.value == "") {
     return console.log("id o nome non validi");
   }
@@ -106,77 +114,69 @@ descriptionListButton.addEventListener("click",async () => {
   descriptionListName.value = "";
 
   await reloadListTable();
+});
+
+postListButtonNote.addEventListener("click", async () => {
+  if (postListNameNote.value == "") {
+    return console.log("nome non valido");
+  }
+
+  await apiRequest(host + "/notes", "POST", { task_id: postNoteId, state: "todo", name: postListNameNote.value });
+
+  postListNameNote.value = "";
+
+  await reloadListTableNote(postNoteId);
+});
+putListButtonNote.addEventListener("click", () =>{
+  if(putListNameNote.value == ""){
+    return console.log("nome inserito non valido")
+  }
+  apiRequest(host + "/notes/" + putListIdNote ,"PUT", {name:putListNameNote.value});
+  putListNameNote.value = "";
+  reloadListTableNote(postNoteId);
 })
 
-
-
-const getListButtonNote = document.getElementById("get-list-button-note");
-const postListNameNote = document.getElementById("post-list-name-note");
-const postListButtonNote = document.getElementById("post-list-button-note");
-const resultListNote = document.getElementById("result-list-note");
-const putListNameNote = document.getElementById("put-list-name-note");
-let putListIdNote = ""
-const putListButtonNote = document.getElementById("put-list-note");
-
-async function reloadListTableNote() {
-  apiRequest(host + "/notes", "GET", {})
+function reloadListTableNote(taskId) {
+  apiRequest(host + "/tasks/" + taskId, "GET")
     .then((data) => {
       resultListNote.innerHTML = "";
       const table = document.createElement("table");
-
       const th = document.createElement("th");
-      th.textContent = "Note";
-      th.colSpan = "5";
+      th.textContent = "Notes";
+      th.colSpan = "4";
       const tr = document.createElement("tr");
       tr.appendChild(th);
       table.appendChild(tr);
-
-      for (const note of data) {
+      for (const notes of data.notes) {
+        const td5 = document.createElement("td");
         const tr = document.createElement("tr");
         const td1 = document.createElement("td");
-        td1.innerHTML = note.id;
+        td1.innerHTML = notes.id;
         const td2 = document.createElement("td");
-        td2.innerHTML = note.name;
+        td2.innerHTML = notes.name;
         td2.style.cursor = "pointer";
-          td2.addEventListener("click", () => {
-            putListIdNote = note.id;
-            putListNameNote.focus();
+        td2.addEventListener("click", ()=>{
+          putListIdNote = notes.id;
+          putListNameNote.focus();
         })
-        const td3 = document.createElement("td");
-        td3.innerHTML = note.task_id;
         const td4 = document.createElement("td");
-        td4.innerHTML = note.state;
-        const td5 = document.createElement("td");
+        td4.innerHTML = notes.state;
+        td4.addEventListener("click", async () => {
+          if (notes.state == "todo") {
+            await apiRequest(host + "/notes/" + notes.id, "PUT", { state: "done" });
+          } else {
+            await apiRequest(host + "/notes/" + notes.id, "PUT", { state: "todo" });
+          }
+          await reloadListTableNote(taskId);
+        });
         td5.innerHTML = "&#9003";
         td5.style.cursor = "pointer";
         td5.addEventListener("click", async () => {
-
-          await apiRequest(host + "/notes/" + note.id, "DELETE", {});
-
-          await reloadListTableNote();
+          await apiRequest(host + "/notes/" + notes.id, "DELETE", {});
+          await reloadListTableNote(taskId);
         });
-
-        td4.addEventListener("click", () => {
-          if (note.state == "todo") {
-            // cambia in done
-            apiRequest(host + "/notes/" + note.id , "PUT", { state: "done" }).then(() => {
-              setTimeout(() => {
-                reloadListTableNote();
-              }, 20);
-            });
-          } else {
-            // cambia in todo
-            apiRequest(host + "/notes/" + note.id , "PUT", { state: "todo" }).then(() => {
-              setTimeout(() => {
-                reloadListTableNote();
-              }, 20);
-            });
-          }
-        });
-
         tr.appendChild(td1);
         tr.appendChild(td2);
-        tr.appendChild(td3);
         tr.appendChild(td4);
         tr.appendChild(td5);
         table.appendChild(tr);
@@ -185,33 +185,3 @@ async function reloadListTableNote() {
     })
     .catch((error) => console.error(error));
 }
-
-reloadListTableNote();
-
-postListButtonNote.addEventListener("click", () => {
-  if (postListNameNote.value == "" ) {
-    return console.log("id o nome non validi");
-  }
-
-  //chiedere a derteo se gli passi che todo
-
-  apiRequest(host + "/notes", "POST", { task_id:postNoteId, state:"todo", name: postListNameNote.value });
-
-  postListNameNote.value = "";
-
-  reloadListTableNote()
-});
-
-putListButtonNote.addEventListener("click", () => {
-  if (putListNameNote.value == "") {
-    return console.log("id o nome non validi");
-  }
-
-  apiRequest(host + "/notes/" + putListIdNote, "PUT", { name: putListNameNote.value });
-
-  putListNameNote.value = "";
-
-  reloadListTableNote();
-});
-
-// ripassare quello che ho scritto su perplexity per eliminare un intera riga con la DELETE grazie a un bottone serve l'id scorrendo un for
