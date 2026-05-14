@@ -54,15 +54,33 @@ async function reloadListTable() {
 
           reloadListTableNote(tasks.id);
         });
-        
+
         td3.addEventListener("click", () => {
           descriptionListId = tasks.id;
           descriptionListName.focus();
         });
         td4.style.cursor = "pointer";
-        td4.addEventListener("click", async () => {
-          await apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
-          await reloadListTable();
+        td4.addEventListener("click", () => {
+
+          apiRequest(host + "/tasks/" + tasks.id, "GET")
+            .then((data) => {
+              if (data.notes.length !== 0) {
+                if (confirm("vuoi cancellare questa lista e tutte le sue note?")) {
+                  apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
+                  resultListNote.innerHTML = "";
+                  reloadListTable();
+                }
+              }else {
+                  apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
+                  resultListNote.innerHTML = "";
+                  reloadListTable();
+
+                  
+                }
+            })
+
+
+
         });
         tr.appendChild(td1);
         tr.appendChild(td2);
@@ -127,11 +145,11 @@ postListButtonNote.addEventListener("click", async () => {
 
   await reloadListTableNote(postNoteId);
 });
-putListButtonNote.addEventListener("click", () =>{
-  if(putListNameNote.value == ""){
+putListButtonNote.addEventListener("click", () => {
+  if (putListNameNote.value == "") {
     return console.log("nome inserito non valido")
   }
-  apiRequest(host + "/notes/" + putListIdNote ,"PUT", {name:putListNameNote.value});
+  apiRequest(host + "/notes/" + putListIdNote, "PUT", { name: putListNameNote.value });
   putListNameNote.value = "";
   reloadListTableNote(postNoteId);
 })
@@ -148,6 +166,7 @@ function reloadListTableNote(taskId) {
       tr.appendChild(th);
       table.appendChild(tr);
       for (const notes of data.notes) {
+
         const td5 = document.createElement("td");
         const tr = document.createElement("tr");
         const td1 = document.createElement("td");
@@ -155,7 +174,7 @@ function reloadListTableNote(taskId) {
         const td2 = document.createElement("td");
         td2.innerHTML = notes.name;
         td2.style.cursor = "pointer";
-        td2.addEventListener("click", ()=>{
+        td2.addEventListener("click", () => {
           putListIdNote = notes.id;
           putListNameNote.focus();
         })
@@ -180,8 +199,18 @@ function reloadListTableNote(taskId) {
         tr.appendChild(td4);
         tr.appendChild(td5);
         table.appendChild(tr);
+
       }
       resultListNote.appendChild(table);
     })
     .catch((error) => console.error(error));
 }
+
+
+// for (const notes of data.notes) {
+//            if (notes.id) {
+//             verifica = 0;
+//         } else {
+//         verifica = 1;
+//     }
+// }
