@@ -333,6 +333,7 @@ tr.is-selected td:first-child::before {
   border-radius: var(--radius-sm);
 }
 
+
 /* =========================================================
    Responsive: due colonne -> stack su mobile
    ========================================================= */
@@ -356,3 +357,23 @@ tr.is-selected td:first-child::before {
 table tr { animation: fadeIn 0.2s ease both; }
 
 ::selection { background: var(--primary); color: #fff; }
+
+/* Cella titolo selezionata - toggle semplice con background */
+td.is-selected {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.2px;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+td.is-selected::after {
+  content: "✓";
+  margin-left: 8px;
+  font-size: 11px;
+  opacity: 0.9;
+}

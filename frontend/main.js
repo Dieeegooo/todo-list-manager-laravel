@@ -51,7 +51,7 @@ async function reloadTasks() {
 
         tdTitle.addEventListener("click", () => {
           selectedTaskId = task.id;
-          
+          tdTitle.classList.toggle("is-selected");
           reloadNotes(task.id);
         });
 
