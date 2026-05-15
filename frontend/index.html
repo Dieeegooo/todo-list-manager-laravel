@@ -1,57 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <script src="api.js" defer></script>
-  <script src="main.js" defer></script>
-  <link rel="stylesheet" href="./index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks &amp; Notes</title>
+  <link rel="stylesheet" href="index.css" />
 </head>
-
 <body>
-  <div class="container">
-    <div id="list-div">
-      <section id="request-post">
-        <label for="post-list-name">Insert element on list</label> <br>
-        <input type="text" id="post-list-name" placeholder="Insert name of List">
-        <input type="text" id="descrizione" placeholder="insert description">
-        <button class="" id="post-list-button">Insert List</button>
-      </section>
 
-      <section id="list-put">
-        <label for="put-list-name">Update list</label> <br>
-        <input id="put-list-name" type="text" placeholder="New list name" />
-         <button id="put-list">Change list name</button>  
-         <div>
-         <label for="description-list">Update description</label> <br>
-        <input id="description-list" type="text" placeholder="New description name" />
-         <button id="put-list-description">Change description name</button>
-         </div>
-      </section>
-    </div>
+  <h1>Tasks &amp; Notes</h1>
 
-    <div>
-      <section id="request-post-note">
-        <label for="post-list-name-note">Insert element on note</label> <br>
-        <input type="text" id="post-list-name-note" placeholder="Insert name of note">
-        <button id="post-list-button-note">Insert List</button>
-      </section>
+  <div class="grid">
 
-      <section id="list-put-note">
-        <label for="put-list-name-note">Update note</label> <br>
-       <input id="put-list-name-note" type="text" placeholder="New note name" />
-        <button id="put-list-note">Change note name</button>
-      </section>
+    <!-- ============================================
+         COLONNA SINISTRA: TASKS
+         ============================================ -->
+    <section class="panel">
+      <h2>
+        Tasks
+        <span class="badge">clicca un titolo per vedere le note</span>
+      </h2>
+
+      <!-- nuova task -->
+      <div class="row">
+        <input type="text" id="post-list-name"  placeholder="Titolo nuova task" />
+        <input type="text" id="descrizione"     placeholder="Descrizione" />
+        <button id="post-list-button">+ Aggiungi</button>
+      </div>
+
+      <!-- modifica task selezionata -->
+      <div class="edit-group">
+        <span class="label">Modifica la task selezionata</span>
+        <div class="row">
+          <input type="text" id="put-list-name" placeholder="Nuovo titolo" />
+          <button id="put-list">Aggiorna titolo</button>
+        </div>
+        <div class="row">
+          <input type="text" id="description-list" placeholder="Nuova descrizione" />
+          <button id="put-list-description">Aggiorna descrizione</button>
+        </div>
+      </div>
+
+      <!-- elenco tasks -->
+      <div id="result-list"></div>
+    </section>
 
 
-    </div>
+    <!-- ============================================
+         COLONNA DESTRA: NOTES
+         ============================================ -->
+    <section class="panel">
+      <h2>
+        Notes
+        <span class="badge empty" id="notes-context-badge">nessuna task selezionata</span>
+      </h2>
+
+      <!-- nuova nota -->
+      <div class="row">
+        <input type="text" id="post-list-name-note" placeholder="Testo della nuova nota" />
+        <button id="post-list-button-note">+ Aggiungi</button>
+      </div>
+
+      <!-- modifica nota selezionata -->
+      <div class="edit-group">
+        <span class="label">Modifica la nota selezionata</span>
+        <div class="row">
+          <input type="text" id="put-list-name-note" placeholder="Nuovo testo della nota" />
+          <button id="put-list-note">Aggiorna nota</button>
+        </div>
+      </div>
+
+      <!-- elenco note -->
+      <div id="result-list-note">
+        <div class="empty-state">Seleziona una task per visualizzare le note</div>
+      </div>
+    </section>
+
   </div>
-  <div class = "container-table">
-    <div id="result-list"></div>
-    <div id="result-list-note"></div>
-  </div>
+
+
+  <!-- Helper apiRequest (rimuovilo se ce l'hai già in app.js) -->
+  <script>
+    async function apiRequest(url, method = "GET", body = null) {
+      const opts = {
+        method,
+        headers: { "Content-Type": "application/json" }
+      };
+      if (body && method !== "GET") opts.body = JSON.stringify(body);
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      return text ? JSON.parse(text) : null;
+    }
+  </script>
+
+  <!-- Il tuo script principale -->
+  <script src="main.js"></script>
 </body>
-
 </html>

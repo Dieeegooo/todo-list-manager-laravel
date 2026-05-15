@@ -1,216 +1,204 @@
-const host = "http://localhost:8000/api";
-const getListButton = document.getElementById("get-list-button");
-const postListName = document.getElementById("post-list-name");
-const postListButton = document.getElementById("post-list-button");
-const resultList = document.getElementById("result-list");
-const description = document.getElementById("descrizione");
-const putListName = document.getElementById("put-list-name");
-let putListId = document.getElementById("put-list-id");
-const putListButton = document.getElementById("put-list");
-const descriptionListName = document.getElementById("description-list");
-const descriptionListButton = document.getElementById("put-list-description");
-const getListButtonNote = document.getElementById("get-list-button-note");
-const postListNameNote = document.getElementById("post-list-name-note");
-const postListButtonNote = document.getElementById("post-list-button-note");
-const resultListNote = document.getElementById("result-list-note");
-const putListNameNote = document.getElementById("put-list-name-note");
-let putListIdNote = "";
-const putListButtonNote = document.getElementById("put-list-note");
-let postNoteId = "";
-let deleteListId = "";
-let descriptionListId = "";
-let id = null;
 
-async function reloadListTable() {
-  apiRequest(host + "/tasks", "GET", {})
+const API = "http://localhost:8000/api";
+
+const newTaskTitleInput    = document.getElementById("post-list-name");
+const newTaskDescInput     = document.getElementById("descrizione");
+const addTaskButton        = document.getElementById("post-list-button");
+const editTaskTitleInput   = document.getElementById("put-list-name");
+const editTaskDescInput    = document.getElementById("description-list");
+const editTaskButton       = document.getElementById("put-list");
+const editTaskDescButton   = document.getElementById("put-list-description");
+const tasksContainer       = document.getElementById("result-list");
+
+
+const newNoteInput         = document.getElementById("post-list-name-note");
+const addNoteButton        = document.getElementById("post-list-button-note");
+const editNoteInput        = document.getElementById("put-list-name-note");
+const editNoteButton       = document.getElementById("put-list-note");
+const notesContainer       = document.getElementById("result-list-note");
+
+
+let selectedTaskId = null;
+let selectedNoteId = "";
+
+
+async function reloadTasks() {
+  apiRequest(API + "/tasks", "GET", {})
     .then((data) => {
-      console.log(data);
-      resultList.innerHTML = "";
+      tasksContainer.innerHTML = "";
       const table = document.createElement("table");
 
-      const th = document.createElement("th");
-      th.textContent = "Tasks";
-      th.colSpan = "5";
-      const tr = document.createElement("tr");
-      tr.appendChild(th);
-      table.appendChild(tr);
+      const header = document.createElement("th");
+      header.textContent = "Tasks";
+      header.colSpan = "5";
+      const headerRow = document.createElement("tr");
+      headerRow.appendChild(header);
+      table.appendChild(headerRow);
 
-      for (const tasks of data) {
-        const tr = document.createElement("tr");
-        const td1 = document.createElement("td");
-        td1.innerHTML = tasks.id;
-        const td2 = document.createElement("td");
-        td2.innerHTML = tasks.title;
-        const td3 = document.createElement("td");
-        td3.style.cursor = "pointer";
-        td2.style.cursor = "pointer";
-        td3.innerHTML = tasks.description;
-        const td4 = document.createElement("td");
-        td4.innerHTML = "&#9003";
-        td2.addEventListener("click", () => {
-          putListId = tasks.id;
-          deleteListId = tasks.id;
-          postNoteId = tasks.id;
+      for (const task of data) {
+        const row       = document.createElement("tr");
+        const tdId      = document.createElement("td");
+        const tdTitle   = document.createElement("td");
+        const tdDesc    = document.createElement("td");
+        const tdDelete  = document.createElement("td");
 
-          reloadListTableNote(tasks.id);
+        tdId.innerHTML    = task.id;
+        tdTitle.innerHTML = task.title;
+        tdDesc.innerHTML  = task.description;
+        tdDelete.innerHTML = "⌫";
+
+        tdTitle.style.cursor = tdDesc.style.cursor = tdDelete.style.cursor = "pointer";
+
+        tdTitle.addEventListener("click", () => {
+          selectedTaskId = task.id;
+          
+          reloadNotes(task.id);
         });
 
-        td3.addEventListener("click", () => {
-          descriptionListId = tasks.id;
-          descriptionListName.focus();
+        tdDesc.addEventListener("click", () => {
+          selectedTaskId = task.id;
+          editTaskDescInput.focus();
         });
-        td4.style.cursor = "pointer";
-        td4.addEventListener("click", () => {
 
-          apiRequest(host + "/tasks/" + tasks.id, "GET")
+        tdDelete.addEventListener("click", () => {
+          apiRequest(API + "/tasks/" + task.id, "GET")
             .then((data) => {
               if (data.notes.length !== 0) {
-                if (confirm("vuoi cancellare questa lista e tutte le sue note?")) {
-                  apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
-                  resultListNote.innerHTML = "";
-                  reloadListTable();
+                if (confirm("Vuoi cancellare questa lista e tutte le sue note?")) {
+                  apiRequest(API + "/tasks/" + task.id, "DELETE", {});
+                  notesContainer.innerHTML = "";
+                  reloadTasks();
                 }
-              }else {
-                  apiRequest(host + "/tasks/" + tasks.id, "DELETE", {});
-                  resultListNote.innerHTML = "";
-                  reloadListTable();
-
-                  
-                }
-            })
-
-
-
+              } else {
+                apiRequest(API + "/tasks/" + task.id, "DELETE", {});
+                notesContainer.innerHTML = "";
+                reloadTasks();
+              }
+            });
         });
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td3);
-        tr.appendChild(td4);
-        table.appendChild(tr);
+
+        row.appendChild(tdId);
+        row.appendChild(tdTitle);
+        row.appendChild(tdDesc);
+        row.appendChild(tdDelete);
+        table.appendChild(row);
       }
-      resultList.appendChild(table);
+      tasksContainer.appendChild(table);
     })
     .catch((error) => console.error(error));
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  reloadListTable();
+document.addEventListener("DOMContentLoaded", () => reloadTasks());
+
+addTaskButton.addEventListener("click", () => {
+  if (!newTaskTitleInput.value) return;
+  apiRequest(API + "/tasks", "POST", {
+    title: newTaskTitleInput.value,
+    description: newTaskDescInput.value
+  });
+  newTaskTitleInput.value = newTaskDescInput.value = "";
+  reloadTasks();
 });
 
-postListButton.addEventListener("click", () => {
-  if (postListName.value == "") {
-    return console.log("nome o descrizione non validi");
-  }
-
-  apiRequest(host + "/tasks", "POST", { title: postListName.value, description: description.value });
-
-  postListName.value = "";
-  description.value = "";
-
-  reloadListTable();
+editTaskButton.addEventListener("click", () => {
+  if (!selectedTaskId || !editTaskTitleInput.value) return;
+  apiRequest(API + "/tasks/" + selectedTaskId, "PUT", { title: editTaskTitleInput.value });
+  editTaskTitleInput.value = "";
+  reloadTasks();
 });
 
-putListButton.addEventListener("click", () => {
-  if (putListId.value == "" || putListName.value == "") {
-    return console.log("id o nome non validi");
-  }
-
-  apiRequest(host + "/tasks/" + putListId, "PUT", { title: putListName.value });
-
-  putListId.value = "";
-  putListName.value = "";
-
-  reloadListTable();
+editTaskDescButton.addEventListener("click", async () => {
+  if (!editTaskDescInput.value) return;
+  await apiRequest(API + "/tasks/" + selectedTaskId, "PUT", { description: editTaskDescInput.value });
+  editTaskDescInput.value = "";
+  await reloadTasks();
 });
 
-descriptionListButton.addEventListener("click", async () => {
-  if (descriptionListName.value == "") {
-    return console.log("id o nome non validi");
-  }
-  await apiRequest(host + "/tasks/" + descriptionListId, "PUT", { description: descriptionListName.value });
 
-  descriptionListName.value = "";
 
-  await reloadListTable();
-});
-
-postListButtonNote.addEventListener("click", async () => {
-  if (postListNameNote.value == "") {
-    return console.log("nome non valido");
-  }
-
-  await apiRequest(host + "/notes", "POST", { task_id: postNoteId, state: "todo", name: postListNameNote.value });
-
-  postListNameNote.value = "";
-
-  await reloadListTableNote(postNoteId);
-});
-putListButtonNote.addEventListener("click", () => {
-  if (putListNameNote.value == "") {
-    return console.log("nome inserito non valido")
-  }
-  apiRequest(host + "/notes/" + putListIdNote, "PUT", { name: putListNameNote.value });
-  putListNameNote.value = "";
-  reloadListTableNote(postNoteId);
-})
-
-function reloadListTableNote(taskId) {
-  apiRequest(host + "/tasks/" + taskId, "GET")
+function reloadNotes(taskId) {
+  apiRequest(API + "/tasks/" + taskId, "GET")
     .then((data) => {
-      resultListNote.innerHTML = "";
+      notesContainer.innerHTML = "";
       const table = document.createElement("table");
-      const th = document.createElement("th");
-      th.textContent = "Notes";
-      th.colSpan = "4";
-      const tr = document.createElement("tr");
-      tr.appendChild(th);
-      table.appendChild(tr);
-      for (const notes of data.notes) {
+      const header = document.createElement("th");
+      header.textContent = "Notes";
+      header.colSpan = "4";
+      const headerRow = document.createElement("tr");
+      headerRow.appendChild(header);
+      table.appendChild(headerRow);
 
-        const td5 = document.createElement("td");
-        const tr = document.createElement("tr");
-        const td1 = document.createElement("td");
-        td1.innerHTML = notes.id;
-        const td2 = document.createElement("td");
-        td2.innerHTML = notes.name;
-        td2.style.cursor = "pointer";
-        td2.addEventListener("click", () => {
-          putListIdNote = notes.id;
-          putListNameNote.focus();
-        })
-        const td4 = document.createElement("td");
-        td4.innerHTML = notes.state;
-        td4.addEventListener("click", async () => {
-          if (notes.state == "todo") {
-            await apiRequest(host + "/notes/" + notes.id, "PUT", { state: "done" });
-          } else {
-            await apiRequest(host + "/notes/" + notes.id, "PUT", { state: "todo" });
-          }
-          await reloadListTableNote(taskId);
-        });
-        td5.innerHTML = "&#9003";
-        td5.style.cursor = "pointer";
-        td5.addEventListener("click", async () => {
-          await apiRequest(host + "/notes/" + notes.id, "DELETE", {});
-          await reloadListTableNote(taskId);
-        });
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td4);
-        tr.appendChild(td5);
-        table.appendChild(tr);
+      for (const note of data.notes) {
+        const row      = document.createElement("tr");
+        const tdId     = document.createElement("td");
+        const tdName   = document.createElement("td");
+        const tdState  = document.createElement("td");
+        const tdDelete = document.createElement("td");
 
+        tdId.innerHTML     = note.id;
+        tdName.innerHTML   = note.name;
+        tdState.innerHTML  = note.state;
+        tdDelete.innerHTML = "⌫";
+
+        tdName.style.cursor = tdDelete.style.cursor = "pointer";
+
+        tdName.addEventListener("click", () => {
+          selectedNoteId = note.id;
+          editNoteInput.focus();
+        });
+
+        tdState.addEventListener("click", async () => {
+          const newState = note.state === "todo" ? "done" : "todo";
+          await apiRequest(API + "/notes/" + note.id, "PUT", { state: newState });
+          await reloadNotes(taskId);
+        });
+
+        tdDelete.addEventListener("click", async () => {
+          await apiRequest(API + "/notes/" + note.id, "DELETE", {});
+          await reloadNotes(taskId);
+        });
+
+        row.appendChild(tdId);
+        row.appendChild(tdName);
+        row.appendChild(tdState);
+        row.appendChild(tdDelete);
+        table.appendChild(row);
       }
-      resultListNote.appendChild(table);
+      notesContainer.appendChild(table);
     })
     .catch((error) => console.error(error));
 }
 
+addNoteButton.addEventListener("click", async () => {
+  if (!newNoteInput.value) return;
+  await apiRequest(API + "/notes", "POST", {
+    task_id: selectedTaskId,
+    state: "todo",
+    name: newNoteInput.value
+  });
+  newNoteInput.value = "";
+  await reloadNotes(selectedTaskId);
+});
 
-// for (const notes of data.notes) {
-//            if (notes.id) {
-//             verifica = 0;
-//         } else {
-//         verifica = 1;
-//     }
-// }
+editNoteButton.addEventListener("click", () => {
+  if (!editNoteInput.value) return;
+  apiRequest(API + "/notes/" + selectedNoteId, "PUT", { name: editNoteInput.value });
+  editNoteInput.value = "";
+  reloadNotes(selectedTaskId);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
