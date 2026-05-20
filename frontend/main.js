@@ -1,21 +1,21 @@
 
 const API = "http://localhost:8000/api";
 
-const newTaskTitleInput    = document.getElementById("post-list-name");
-const newTaskDescInput     = document.getElementById("descrizione");
-const addTaskButton        = document.getElementById("post-list-button");
-const editTaskTitleInput   = document.getElementById("put-list-name");
-const editTaskDescInput    = document.getElementById("description-list");
-const editTaskButton       = document.getElementById("put-list");
-const editTaskDescButton   = document.getElementById("put-list-description");
-const tasksContainer       = document.getElementById("result-list");
+const newTaskTitleInput = document.getElementById("post-list-name");
+const newTaskDescInput = document.getElementById("descrizione");
+const addTaskButton = document.getElementById("post-list-button");
+const editTaskTitleInput = document.getElementById("put-list-name");
+const editTaskDescInput = document.getElementById("description-list");
+const editTaskButton = document.getElementById("put-list");
+const editTaskDescButton = document.getElementById("put-list-description");
+const tasksContainer = document.getElementById("result-list");
 
 
-const newNoteInput         = document.getElementById("post-list-name-note");
-const addNoteButton        = document.getElementById("post-list-button-note");
-const editNoteInput        = document.getElementById("put-list-name-note");
-const editNoteButton       = document.getElementById("put-list-note");
-const notesContainer       = document.getElementById("result-list-note");
+const newNoteInput = document.getElementById("post-list-name-note");
+const addNoteButton = document.getElementById("post-list-button-note");
+const editNoteInput = document.getElementById("put-list-name-note");
+const editNoteButton = document.getElementById("put-list-note");
+const notesContainer = document.getElementById("result-list-note");
 
 
 let selectedTaskId = null;
@@ -36,22 +36,26 @@ async function reloadTasks() {
       table.appendChild(headerRow);
 
       for (const task of data) {
-        const row       = document.createElement("tr");
-        const tdId      = document.createElement("td");
-        const tdTitle   = document.createElement("td");
-        const tdDesc    = document.createElement("td");
-        const tdDelete  = document.createElement("td");
+        const row = document.createElement("tr");
+        const tdId = document.createElement("td");
+        const tdTitle = document.createElement("td");
+        const tdDesc = document.createElement("td");
+        const tdDelete = document.createElement("td");
 
-        tdId.innerHTML    = task.id;
+        tdId.innerHTML = task.id;
         tdTitle.innerHTML = task.title;
-        tdDesc.innerHTML  = task.description;
+        tdDesc.innerHTML = task.description;
         tdDelete.innerHTML = "⌫";
 
         tdTitle.style.cursor = tdDesc.style.cursor = tdDelete.style.cursor = "pointer";
 
         tdTitle.addEventListener("click", () => {
           selectedTaskId = task.id;
-          tdTitle.classList.toggle("is-selected");
+          const wasSelected = tdTitle.classList.contains("is-selected");
+          table.querySelectorAll("td.is-selected").forEach(td => {
+            td.classList.remove("is-selected");
+          });
+          if (!wasSelected) tdTitle.classList.add("is-selected");
           reloadNotes(task.id);
         });
 
@@ -129,15 +133,15 @@ function reloadNotes(taskId) {
       table.appendChild(headerRow);
 
       for (const note of data.notes) {
-        const row      = document.createElement("tr");
-        const tdId     = document.createElement("td");
-        const tdName   = document.createElement("td");
-        const tdState  = document.createElement("td");
+        const row = document.createElement("tr");
+        const tdId = document.createElement("td");
+        const tdName = document.createElement("td");
+        const tdState = document.createElement("td");
         const tdDelete = document.createElement("td");
 
-        tdId.innerHTML     = note.id;
-        tdName.innerHTML   = note.name;
-        tdState.innerHTML  = note.state;
+        tdId.innerHTML = note.id;
+        tdName.innerHTML = note.name;
+        tdState.innerHTML = note.state;
         tdDelete.innerHTML = "⌫";
 
         tdName.style.cursor = tdDelete.style.cursor = "pointer";
@@ -187,18 +191,21 @@ editNoteButton.addEventListener("click", () => {
   reloadNotes(selectedTaskId);
 });
 
+function submitOnEnter(input, button) {
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      button.click();
+    }
+  });
+}
 
+// task
+submitOnEnter(newTaskTitleInput,  addTaskButton);
+submitOnEnter(newTaskDescInput,   addTaskButton);
+submitOnEnter(editTaskTitleInput, editTaskButton);
+submitOnEnter(editTaskDescInput,  editTaskDescButton);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// note
+submitOnEnter(newNoteInput,  addNoteButton);
+submitOnEnter(editNoteInput, editNoteButton);
